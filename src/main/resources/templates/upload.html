@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Upload File</title>
+</head>
+<body>
+<h1>Upload a Word Document</h1>
+<form method="post" action="/upload" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".docx" />
+    <input type="submit" value="Upload" />
+</form>
+<a href="/files">View Files</a> | <a href="/register">Register</a> | <a href="/login">Login</a>
+</body>
+</html>
