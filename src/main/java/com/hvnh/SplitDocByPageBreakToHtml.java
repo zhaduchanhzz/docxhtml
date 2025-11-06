@@ -156,12 +156,12 @@ public class SplitDocByPageBreakToHtml {
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(inputBytes)) {
             Document document = new Document();
             document.loadFromStream(inputStream, FileFormat.Auto);
-            FixedLayoutDocument layoutDoc = new FixedLayoutDocument(document);
-            System.out.println("layoutDoc: " + layoutDoc.getPages().getCount());
+//            FixedLayoutDocument layoutDoc = new FixedLayoutDocument(document);
+//            System.out.println("layoutDoc: " + layoutDoc.getPages().getCount());
             document.getHtmlExportOptions().setImageEmbedded(true);
             document.getHtmlExportOptions().setCssStyleSheetType(CssStyleSheetType.Internal);
             document.getHtmlExportOptions().setFontEmbedded(true);
-
+            document.getHtmlExportOptions().setUseHighQualityRendering(true);
             document.saveToFile(tempOutput.getAbsolutePath(), FileFormat.HtmlFixed);
             document.close();
 

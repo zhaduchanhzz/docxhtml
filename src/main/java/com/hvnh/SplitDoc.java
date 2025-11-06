@@ -7,7 +7,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import java.io.*;
 import java.util.*;
 
-public class SplitDocxByPageBreak_FullCopy {
+public class SplitDoc {
 
     public static void main(String[] args) throws Exception {
         String inputPath = "input.docx";
@@ -23,7 +23,7 @@ public class SplitDocxByPageBreak_FullCopy {
             int cnt = 0;
             for (List<IBodyElement> p : pages) {
                 buffer.addAll(p);
-                if (++cnt == 10) {
+                if (++cnt == 8) {
                     grouped.add(new ArrayList<>(buffer));
                     buffer.clear();
                     cnt = 0;
@@ -41,6 +41,15 @@ public class SplitDocxByPageBreak_FullCopy {
                 String out = outputFolder + "part_" + part + ".docx";
                 try (FileOutputStream fos = new FileOutputStream(out)) {
                     newDoc.write(fos);
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                newDoc.write(baos);
+                byte[] htmlBytes = SplitDocByPageBreakToHtml.convertDocToHtml(baos.toByteArray());
+
+                // Save HTML file
+                String htmlPath = outputFolder + "part_" + part + ".html";
+                try (FileOutputStream fosHtml = new FileOutputStream(htmlPath)) {
+                    fosHtml.write(htmlBytes);
                 }
                 newDoc.close();
                 System.out.println("Created: " + out);
