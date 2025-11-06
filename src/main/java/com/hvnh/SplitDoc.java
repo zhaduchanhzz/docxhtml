@@ -24,6 +24,7 @@ public class SplitDoc {
             for (List<IBodyElement> p : pages) {
                 buffer.addAll(p);
                 if (++cnt == 8) {
+                    removeLastPageBreak(buffer);
                     grouped.add(new ArrayList<>(buffer));
                     buffer.clear();
                     cnt = 0;
@@ -34,10 +35,9 @@ public class SplitDoc {
             int part = 1;
             for (List<IBodyElement> g : grouped) {
                 XWPFDocument newDoc = new XWPFDocument();
-
+                copyNumbering(srcDoc, newDoc);
                 copyDocumentSettings(srcDoc, newDoc);
                 copyBodyElements(srcDoc, newDoc, g);   // <-- clones images
-
                 String out = outputFolder + "part_" + part + ".docx";
                 try (FileOutputStream fos = new FileOutputStream(out)) {
                     newDoc.write(fos);
@@ -58,6 +58,32 @@ public class SplitDoc {
             System.out.println("Split completed. Parts: " + grouped.size());
         }
     }
+    private static void removeLastPageBreak(List<IBodyElement> buffer) {
+        if (buffer.isEmpty()) return;
+
+        IBodyElement last = buffer.get(buffer.size() - 1);
+
+        if (last instanceof XWPFParagraph para) {
+            // Remove all page breaks in runs
+            for (XWPFRun r : para.getRuns()) {
+                r.getCTR().getBrList().removeIf(br -> br.getType() == STBrType.PAGE);
+            }
+            // Remove section break if exists
+            CTPPr pPr = para.getCTP().getPPr();
+            if (pPr != null && pPr.getSectPr() != null) {
+                pPr.unsetSectPr();
+            }
+
+            // If paragraph is empty after removing breaks, remove it entirely
+            if (para.getRuns().isEmpty() || para.getText().isBlank()) {
+                buffer.remove(buffer.size() - 1);
+            }
+
+        } else if (last instanceof XWPFTable) {
+            // Optional: check if table has trailing paragraph with page break
+            // Usually safe to leave tables as-is
+        }
+    }
 
     /* ---- unchanged splitByPageBreak / containsPageOrSectionBreak ---- */
     private static List<List<IBodyElement>> splitByPageBreak(XWPFDocument doc) {
@@ -72,6 +98,17 @@ public class SplitDoc {
         }
         if (!cur.isEmpty()) res.add(cur);
         return res;
+    }
+
+    private static void copyNumbering(XWPFDocument src, XWPFDocument dst) throws Exception {
+        if (src.getNumbering() != null) {
+            XWPFNumbering srcNumbering = src.getNumbering();
+            XWPFNumbering dstNumbering = dst.createNumbering();
+            for (XWPFNum num : srcNumbering.getNums()) {
+                dstNumbering.addNum(num);
+            }
+//            dstNumbering.getCTNumbering().set((CTNumbering) srcNumbering.getCTNumbering().copy());
+        }
     }
 
     private static boolean containsPageOrSectionBreak(IBodyElement e) {
