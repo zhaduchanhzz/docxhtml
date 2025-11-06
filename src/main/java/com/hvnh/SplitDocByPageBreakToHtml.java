@@ -2,6 +2,7 @@ package com.hvnh;
 
 import com.spire.doc.*;
 import com.spire.doc.documents.*;
+import com.spire.doc.pages.FixedLayoutDocument;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -20,14 +21,17 @@ public class SplitDocByPageBreakToHtml {
         String outputHtmlPath = "merged_output.html";
 
         // 1️⃣ Split Word document by manual page breaks
-        List<File> parts = splitByPageBreak(inputPath);
-
+//        List<File> parts = splitByPageBreak(inputPath);
+        Document original = new Document();
+        original.loadFromFile(inputPath);
+        FixedLayoutDocument layoutDoc = new FixedLayoutDocument(original);
+        System.out.println("layoutDoc: " + layoutDoc.getPages().getCount());
         // 2️⃣ Convert each split file to HTML and merge
-        String mergedHtml = mergePartsToHtml(parts);
+//        String mergedHtml = mergePartsToHtml(parts);
 
         // 3️⃣ Save merged HTML file
-        Files.write(Paths.get(outputHtmlPath), mergedHtml.getBytes("UTF-8"));
-        System.out.println("✅ Merged HTML written to " + outputHtmlPath);
+//        Files.write(Paths.get(outputHtmlPath), mergedHtml.getBytes("UTF-8"));
+        System.out.println(" ✅ Merged HTML written to " + outputHtmlPath);
     }
 
     public void countPageBreak(String inputFilePath) throws Exception {
@@ -152,7 +156,8 @@ public class SplitDocByPageBreakToHtml {
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(inputBytes)) {
             Document document = new Document();
             document.loadFromStream(inputStream, FileFormat.Auto);
-
+            FixedLayoutDocument layoutDoc = new FixedLayoutDocument(document);
+            System.out.println("layoutDoc: " + layoutDoc.getPages().getCount());
             document.getHtmlExportOptions().setImageEmbedded(true);
             document.getHtmlExportOptions().setCssStyleSheetType(CssStyleSheetType.Internal);
             document.getHtmlExportOptions().setFontEmbedded(true);
