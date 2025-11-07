@@ -10,6 +10,7 @@ import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -160,12 +161,15 @@ public class SplitDocByPageBreakToHtml {
 //            System.out.println("layoutDoc: " + layoutDoc.getPages().getCount());
             document.getHtmlExportOptions().setImageEmbedded(true);
             document.getHtmlExportOptions().setCssStyleSheetType(CssStyleSheetType.Internal);
+            document.getHtmlExportOptions().setAllowEmbeddingPostScriptFonts(true);
+            document.getHtmlExportOptions().setScaleImageToShapeSize(true);
             document.getHtmlExportOptions().setFontEmbedded(true);
             document.getHtmlExportOptions().setUseHighQualityRendering(true);
             document.saveToFile(tempOutput.getAbsolutePath(), FileFormat.HtmlFixed);
             document.close();
 
             String htmlContent = Files.readString(tempOutput.toPath());
+            Files.delete(Path.of(tempOutput.getAbsolutePath()));
             htmlContent = htmlContent.replaceAll("(?i)Evaluation Warning: The document was created with Spire\\.Doc for JAVA\\.", "");
             htmlContent = removeSprdiv(htmlContent);
 

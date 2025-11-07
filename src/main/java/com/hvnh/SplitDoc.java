@@ -1,19 +1,28 @@
 package com.hvnh;
 
+import com.spire.doc.CssStyleSheetType;
+import com.spire.doc.Document;
+import com.spire.doc.FileFormat;
 import org.apache.poi.openxml4j.opc.*;
 import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
+import static com.hvnh.SplitDocByPageBreakToHtml.removeSprdiv;
+
 public class SplitDoc {
+    static boolean pictureFlags = false;
 
     public static void main(String[] args) throws Exception {
         String inputPath = "input.docx";
         String outputFolder = "output_pages/";
         new File(outputFolder).mkdirs();
-
+        List<String> htmlContents = new ArrayList<>();
         try (XWPFDocument srcDoc = new XWPFDocument(OPCPackage.open(inputPath))) {
 
             // --- Split document by page break ---
@@ -25,7 +34,12 @@ public class SplitDoc {
             int cnt = 0;
             for (List<IBodyElement> p : pages) {
                 buffer.addAll(p);
-                if (++cnt == 8) {
+                for (IBodyElement e : p) {
+                    if (containsImg(e)) {
+                        cnt = 9;
+                    }
+                }
+                if (++cnt >= 10) {
                     removeLastPageBreak(buffer);
                     grouped.add(new ArrayList<>(buffer));
                     buffer.clear();
@@ -33,44 +47,135 @@ public class SplitDoc {
                 }
             }
             if (!buffer.isEmpty()) grouped.add(buffer);
-
-            // --- Detect TOC block(s) ---
-            List<CTSdtBlock> tocBlocks = extractTOCBlocks(srcDoc);
-            int tocGroupIndex = findTocGroupIndex(pages, tocBlocks);
-
-            System.out.println("Detected TOC in group index: " + tocGroupIndex);
-
             int part = 1;
             for (int i = 0; i < grouped.size(); i++) {
                 List<IBodyElement> g = grouped.get(i);
-
                 XWPFDocument newDoc = new XWPFDocument();
                 copyNumbering(srcDoc, newDoc);
                 copyDocumentSettings(srcDoc, newDoc);
-
-                // ✅ Only copy TOC to the part that originally contained it
-                if (i == tocGroupIndex && !tocBlocks.isEmpty()) {
-                    for (CTSdtBlock sdt : tocBlocks) {
-                        newDoc.getDocument().getBody().addNewSdt().set(sdt.copy());
-                    }
-                    System.out.println("→ TOC copied to part_" + part + ".docx");
-                }
-
-                // Copy the main content
                 copyBodyElements(srcDoc, newDoc, g);
-
-                // Save DOCX
                 String out = outputFolder + "part_" + part + ".docx";
                 try (FileOutputStream fos = new FileOutputStream(out)) {
                     newDoc.write(fos);
                 }
-
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                newDoc.write(baos);
+                htmlContents.add(convertDocToHtml(baos.toByteArray()));
+                // Save HTML file
                 newDoc.close();
                 System.out.println("Created: " + out);
                 part++;
             }
-
+            mergeHtmlPages(htmlContents, "output.html");
             System.out.println("Split completed. Parts: " + grouped.size());
+        }
+    }
+
+    public static String mergeHtmlPages(List<String> htmlContents, String outputFile) throws IOException {
+        StringBuilder merged = new StringBuilder();
+
+        merged.append("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <title>Merged Pages</title>
+              <style>
+                html, body {
+                  margin: 0;
+                  padding: 0;
+                  overflow-x: hidden;
+                }
+                iframe {
+                  width: 100%;
+                  border: none;
+                  display: block;
+                  overflow: hidden;
+                }
+              </style>
+            </head>
+            <body>
+            """);
+
+        // Add each HTML page as an iframe with unique ID
+        for (int i = 0; i < htmlContents.size(); i++) {
+            String html = htmlContents.get(i);
+
+            // Escape for srcdoc attribute
+            html = html.replace("&", "&amp;")
+                    .replace("\"", "&quot;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\n", " ");
+
+            merged.append("<!-- Page ").append(i + 1).append(" -->\n")
+                    .append("<iframe id='page").append(i).append("' srcdoc=\"")
+                    .append(html)
+                    .append("\"></iframe>\n\n");
+        }
+
+        // Add improved resizing script
+        merged.append("""
+            <script>
+              window.addEventListener('load', () => {
+                const resizeFrame = (frame) => {
+                  try {
+                    const doc = frame.contentDocument || frame.contentWindow.document;
+                    if (!doc) return;
+                    const html = doc.documentElement;
+                    const body = doc.body;
+                    const height = Math.max(
+                      body.scrollHeight, body.offsetHeight,
+                      html.clientHeight, html.scrollHeight, html.offsetHeight
+                    );
+                    frame.style.height = height + 'px';
+                  } catch (e) {
+                    console.warn('Resize failed:', e);
+                  }
+                };
+
+                document.querySelectorAll('iframe').forEach(frame => {
+                  frame.addEventListener('load', () => resizeFrame(frame));
+                  // Resize again after short delay to handle images/styles
+                  setTimeout(() => resizeFrame(frame), 500);
+                });
+              });
+            </script>
+            </body>
+            </html>
+            """);
+
+        // Optionally write to file
+        if (outputFile != null && !outputFile.isBlank()) {
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(outputFile), StandardCharsets.UTF_8))) {
+                writer.write(merged.toString());
+            }
+        }
+
+        return merged.toString();
+    }
+
+
+    public static String convertDocToHtml(byte[] inputBytes) throws IOException {
+        File tempOutput = File.createTempFile("html_output_", ".html");
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(inputBytes)) {
+            com.spire.doc.Document document = new Document();
+            document.loadFromStream(inputStream, FileFormat.Auto);
+            document.getHtmlExportOptions().setImageEmbedded(true);
+            document.getHtmlExportOptions().setCssStyleSheetType(CssStyleSheetType.Internal);
+            document.getHtmlExportOptions().setAllowEmbeddingPostScriptFonts(true);
+            document.getHtmlExportOptions().setScaleImageToShapeSize(true);
+            document.getHtmlExportOptions().setFontEmbedded(true);
+            document.getHtmlExportOptions().setUseHighQualityRendering(true);
+            document.saveToFile(tempOutput.getAbsolutePath(), FileFormat.HtmlFixed);
+            document.close();
+
+            String htmlContent = Files.readString(tempOutput.toPath());
+            Files.delete(Path.of(tempOutput.getAbsolutePath()));
+            htmlContent = htmlContent.replaceAll("(?i)Evaluation Warning: The document was created with Spire\\.Doc for JAVA\\.", "");
+            htmlContent = removeSprdiv(htmlContent);
+            return htmlContent;
         }
     }
 
@@ -116,6 +221,15 @@ public class SplitDoc {
         return false;
     }
 
+    private static boolean containsImg(IBodyElement e) {
+        if (e instanceof XWPFParagraph p) {
+            for (XWPFRun r : p.getRuns()) {
+                if (r.getEmbeddedPictures().size() > 0) return true;
+            }
+        }
+        return false;
+    }
+
     // ------------------------------------------------------------
     private static void copyNumbering(XWPFDocument src, XWPFDocument dst) throws Exception {
         if (src.getNumbering() != null) {
@@ -146,8 +260,8 @@ public class SplitDoc {
                 dst.getDocument().getBody().addNewP().set((CTP) p.getCTP().copy());
             } else if (e instanceof XWPFTable t) {
                 dst.getDocument().getBody().addNewTbl().set((CTTbl) t.getCTTbl().copy());
-            } else if (e instanceof CTSdtBlock sdt) {
-                dst.getDocument().getBody().addNewSdt().set(sdt.getSdtContent().copy());
+            } else if (e instanceof XWPFSDT sdt) {
+                dst.getDocument().getBody().addNewSdt().set(sdt.getDocument().getDocument().getBody().getSdtList().get(0));
             }
         }
         cloneAllImageParts(src, dst);
@@ -174,38 +288,5 @@ public class SplitDoc {
                     XWPFRelation.IMAGES.getRelation(),
                     rId);
         }
-    }
-
-    // ------------------------------------------------------------
-    private static List<CTSdtBlock> extractTOCBlocks(XWPFDocument doc) {
-        List<CTSdtBlock> tocBlocks = new ArrayList<>();
-
-        CTBody body = doc.getDocument().getBody();
-        if (body == null) return tocBlocks;
-        System.out.println(doc.getDocument().getBody().getSdtList().size());
-        for (CTSdtBlock sdt : body.getSdtList()) {
-            if (sdt.getSdtPr() != null && sdt.getSdtPr().getDocPartObj() != null) {
-                CTString gallery = sdt.getSdtPr().getDocPartObj().getDocPartGallery();
-                if (gallery != null ) {
-                    tocBlocks.add(sdt);
-                }
-            }
-        }
-
-        return tocBlocks;
-    }
-
-    private static int findTocGroupIndex(List<List<IBodyElement>> groups, List<CTSdtBlock> tocBlocks) {
-        if (tocBlocks.isEmpty()) return -1;
-
-        Set<CTSdtBlock> tocSet = new HashSet<>(tocBlocks);
-        for (int i = 0; i < groups.size(); i++) {
-            for (IBodyElement e : groups.get(i)) {
-                if (e instanceof CTSdtBlock sdt && tocSet.contains(sdt)) {
-                    return i;
-                }
-            }
-        }
-        return -1;
     }
 }
