@@ -21,13 +21,22 @@ public class RenderEngine {
     public static void main(String[] args) throws Exception {
         String inputPath = "file-sample_1MB.docx";
         String outputFolder = "output_pages/";
+        String outputFile = "outputittrang.html";
+        String exportTYpe = "html";
         new File(outputFolder).mkdirs();
         List<String> htmlContents = new ArrayList<>();
         try (XWPFDocument srcDoc = new XWPFDocument(OPCPackage.open(inputPath))) {
 
             // --- Split document by page break ---
             List<List<IBodyElement>> pages = splitByPageBreak(srcDoc);
-
+            if (pages.size() <= 10) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                srcDoc.write(baos);
+                htmlContents.add(convertDocToHtml(baos.toByteArray(),exportTYpe));
+                srcDoc.close();
+                mergeHtmlPages(htmlContents, outputFile);
+                return;
+            }
             // --- Group every 8 pages ---
             List<List<IBodyElement>> grouped = new ArrayList<>();
             List<IBodyElement> buffer = new ArrayList<>();
@@ -62,11 +71,11 @@ public class RenderEngine {
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 newDoc.write(baos);
-                htmlContents.add(convertDocToHtml(baos.toByteArray(),"htmlFixed"));
+                htmlContents.add(convertDocToHtml(baos.toByteArray(),exportTYpe));
                 newDoc.close();
                 part++;
             }
-            mergeHtmlPages(htmlContents, "output1111.html");
+            mergeHtmlPages(htmlContents, outputFile);
 //            System.out.println("Split completed. Parts: " + grouped.size());
         }
     }
