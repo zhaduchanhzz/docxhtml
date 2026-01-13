@@ -1,9 +1,10 @@
 package com.ca;
 
+import com.example.webdav.HashFilePDF;
 import com.viettel.cloud.ca.CertBO;
 import com.viettel.signature.pdf.DisplayConfig;
 import com.viettel.signature.pdf.TimestampConfig;
-import com.viettel.signature.plugin.SignPdfFile;
+import com.viettel.signature.plugin.SignPdfFileIText7;
 import com.viettel.signature.utils.CertUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,7 +26,7 @@ public class SignatureFileTest {
     private static Map<String, CertBO> certMap = new HashMap<String, CertBO>();
     private static List<String> credentialIDList = new ArrayList<String>();
 
-    private static Boolean insertSignaturePdfFile(SignPdfFile pdfSig, String signature, String destPath) {
+    private static Boolean insertSignaturePdfFile(SignPdfFileIText7 pdfSig, String signature, String destPath) {
         TimestampConfig timestampConfig = new TimestampConfig();
         timestampConfig.setUseTimestamp(false);
         if (!pdfSig.insertSignature(signature, destPath, timestampConfig)) {
@@ -88,14 +89,14 @@ public class SignatureFileTest {
             tempOutputFile = Files.createTempFile("output_", ".pdf");
 
             // Tạo hash cho PDF                         
-            SignPdfFile pdfSig = new SignPdfFile();
+            SignPdfFileIText7 pdfSig = new SignPdfFileIText7();
 
-            String base64Hash = new String();
+//            String base64Hash = new String();
             String imageFile = "images/logo.jpg";
             String fontPath = "font/times.ttf";
             // String base64Hash = HashFilePDF.getHashTypeImage(pdfSig, tempInputFile.toString(), certChain, imageFile);
             log.info("   - ImagePath: " + displayConfig.getPathImage());
-            // String base64Hash = pdfSig.createHash(tempInputFile.toString(), certChain, "SHA256", "RSA", displayConfig);
+             String base64Hash = pdfSig.createHash(tempInputFile.toString(), certChain, "SHA256", "RSA", displayConfig);
             // base64Hash = HashFilePDF.getHashTypeRectangleText(pdfSig, tempInputFile.toString(), certChain, fontPath);
             base64Hash = HashFilePDF.getHashTypeImage(pdfSig, tempInputFile.toString(), certChain, imageFile);
 
@@ -278,9 +279,8 @@ public class SignatureFileTest {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
         // Khởi tạo Log4j
-        BasicConfigurator.configure();
         log.info("Chương trình bắt đầu");
-        String inputPath = "C:\\Users\\User\\Downloads\\document.pdf";
+        String inputPath = "C:\\Users\\ADMIN\\Downloads\\Duong-Cong-Chien-FE.pdf";
 
         // 2️⃣ Đọc toàn bộ bytes của file PDF
         byte[] pdfBytes = Files.readAllBytes(Paths.get(inputPath));
@@ -309,10 +309,12 @@ public class SignatureFileTest {
         float height = 100.0f; // Chiều cao
         String imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyCAYAAACqNX6+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAEvWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSfvu78nIGlkPSdXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQnPz4KPHg6eG1wbWV0YSB4bWxuczp4PSdhZG9iZTpuczptZXRhLyc+CjxyZGY6UkRGIHhtbG5zOnJkZj0naHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyc+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczpBdHRyaWI9J2h0dHA6Ly9ucy5hdHRyaWJ1dGlvbi5jb20vYWRzLzEuMC8nPgogIDxBdHRyaWI6QWRzPgogICA8cmRmOlNlcT4KICAgIDxyZGY6bGkgcmRmOnBhcnNlVHlwZT0nUmVzb3VyY2UnPgogICAgIDxBdHRyaWI6Q3JlYXRlZD4yMDI1LTEyLTA0PC9BdHRyaWI6Q3JlYXRlZD4KICAgICA8QXR0cmliOkV4dElkPjMyODVkN2I3LTNhODQtNGVhMi1hODAzLTYyM2QyYzViZGM5YTwvQXR0cmliOkV4dElkPgogICAgIDxBdHRyaWI6RmJJZD41MjUyNjU5MTQxNzk1ODA8L0F0dHJpYjpGYklkPgogICAgIDxBdHRyaWI6VG91Y2hUeXBlPjI8L0F0dHJpYjpUb3VjaFR5cGU+CiAgICA8L3JkZjpsaT4KICAgPC9yZGY6U2VxPgogIDwvQXR0cmliOkFkcz4KIDwvcmRmOkRlc2NyaXB0aW9uPgoKIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PScnCiAgeG1sbnM6ZGM9J2h0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvJz4KICA8ZGM6dGl0bGU+CiAgIDxyZGY6QWx0PgogICAgPHJkZjpsaSB4bWw6bGFuZz0neC1kZWZhdWx0Jz5UcuG6p24gTWluaCBUaOG6r25nIC0gMTwvcmRmOmxpPgogICA8L3JkZjpBbHQ+CiAgPC9kYzp0aXRsZT4KIDwvcmRmOkRlc2NyaXB0aW9uPgoKIDxyZGY6RGVzY3Jp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";
         int pageNumber = 1; // Số trang cần ký
-        String sign = convertSignFile(inputBase64, certificateStrings, signatureBase64, x, y, width, height, imageBase64, pageNumber);
+//        String sign = convertSignFile(inputBase64, certificateStrings, signatureBase64, x, y, width, height, imageBase64, pageNumber);
         // System.out.println("Ký: " + sign);
         // Đường dẫn file (bạn thay đổi cho phù hợp)
-        String filePath = "C:\\Users\\output1.pdf";
+        String sign = convertSignFile(inputBase64, certificateStrings, signatureBase64, x, y, width, height, imageBase64, pageNumber);
+
+        String filePath = "C:\\Users\\ADMIN\\Downloads\\output1.pdf";
 
         // Ghi file
         try {

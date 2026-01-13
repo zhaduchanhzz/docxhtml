@@ -7,9 +7,8 @@ package com.example.webdav;
 
 import com.itextpdf.layout.properties.TextAlignment;
 import com.viettel.signature.pdf.DisplayConfig;
-import com.viettel.signature.pdf.SignPdfAsynchronous;
-import com.viettel.signature.pdf.SignPdfSynchronous;
-import com.viettel.signature.plugin.SignPdfFile;
+import com.viettel.signature.pdf.SignPdfAsynchronous7;
+import com.viettel.signature.plugin.SignPdfFileIText7;
 import com.viettel.signature.utils.CertUtils;
 
 import java.io.File;
@@ -17,32 +16,32 @@ import java.security.cert.X509Certificate;
 
 public class HashFilePDF {
 
-    public static String getHashTypeNoDisplay_ExistedSignatureField(SignPdfFile pdfSig, String filePath, X509Certificate[] certChain, String fontPath, String fieldName) {
+    public static String getHashTypeNoDisplay_ExistedSignatureField(SignPdfFileIText7 pdfSig, String filePath, X509Certificate[] certChain, String fontPath, String fieldName) {
 
         String contact = CertUtils.getCN(certChain[0]);
         String reason = "Ký số";
         String location = "Hà Nội";
         DisplayConfig displayConfig = DisplayConfig.generateDisplayConfigNoDisplay_ExistSignatureField(contact, reason, location, fieldName);
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         String base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
         return base64Hash;
     }
 
-    public static String getHashTypeNoDisplay(SignPdfFile pdfSig, String filePath, X509Certificate[] certChain, String fontPath) {
+    public static String getHashTypeNoDisplay(SignPdfFileIText7 pdfSig, String filePath, X509Certificate[] certChain, String fontPath) {
         String contact = CertUtils.getCN(certChain[0]);
         String reason = "Ký số";
         String location = "Hà Nội";
         DisplayConfig displayConfig = DisplayConfig.generateDisplayConfigNoDisplay(contact, reason, location);
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         String base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
         return base64Hash;
     }
 
-    public static String getHashTypeRectangleText(SignPdfFile pdfSig, String filePath, X509Certificate[] certChain, String fontPath) {
+    public static String getHashTypeRectangleText(SignPdfFileIText7 pdfSig, String filePath, X509Certificate[] certChain, String fontPath) {
         int numberPageSign = 2;
         float widthRectangle = DisplayConfig.WIDTH_RECTANGLE_DEFAULT;
         float heightRectangle = DisplayConfig.HEIGHT_RECTANGLE_DEFAULT;
@@ -72,12 +71,12 @@ public class HashFilePDF {
 //        displayConfig.setSignDate();
         displayConfig.getSignDate();
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfSynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfSynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         return pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
     }
 
-//    public static String getHashTypeRectangleText_ExistedSignatureField(SignPdfFile pdfSig, String filePath, X509Certificate[] certChain, String fontPath, String displayText, String fieldName) {
+//    public static String getHashTypeRectangleText_ExistedSignatureField(SignPdfFileIText7 pdfSig, String filePath, X509Certificate[] certChain, String fontPath, String displayText, String fieldName) {
 ////        String displayText = DisplayConfig.DISPLAY_TEXT_DEFAULT_EMPTY;
 //        String formatRectangleText = DisplayConfig.FORMAT_RECTANGLE_TEXT_DEFAULT;
 //        String contact = CertUtils.getCN(certChain[0]);
@@ -100,7 +99,7 @@ public class HashFilePDF {
 //        return base64Hash;
 //    }
 //
-    public static String getHashTypeImageTextKBNN(SignPdfFile pdfSig, String filePath,
+    public static String getHashTypeImageTextKBNN(SignPdfFileIText7 pdfSig, String filePath,
             X509Certificate[] certChain, String fontPath, String pathImage, String displayText) {
         int numberPageSign = DisplayConfig.NUMBER_PAGE_SIGN_DEFAULT;
         float widthRectangle = DisplayConfig.WIDTH_RECTANGLE_DEFAULT;
@@ -136,13 +135,13 @@ public class HashFilePDF {
                 ou, o,
                 pathImage);
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         String base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
         return base64Hash;
     }
 
-    public static String getHashTypeImageText(SignPdfFile pdfSig, String filePath,
+    public static String getHashTypeImageText(SignPdfFileIText7 pdfSig, String filePath,
             X509Certificate[] certChain, String fontPath, String pathImage) {
         int numberPageSign = DisplayConfig.NUMBER_PAGE_SIGN_DEFAULT;
         float widthRectangle = DisplayConfig.WIDTH_RECTANGLE_DEFAULT;
@@ -173,13 +172,13 @@ public class HashFilePDF {
                 ou, o,
                 pathImage);
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         String base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
         return base64Hash;
     }
 
-    public static String getHashTypeImageText_ExistedSignatureField(SignPdfFile pdfSig,
+    public static String getHashTypeImageText_ExistedSignatureField(SignPdfFileIText7 pdfSig,
             String filePath, X509Certificate[] certChain, String fontPath,
             String displayText, String fieldName, String pathImage) {
 //        String displayText = DisplayConfig.DISPLAY_TEXT_DEFAULT_EMPTY;
@@ -199,13 +198,13 @@ public class HashFilePDF {
                 ou, o,
                 pathImage);
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         String base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
         return base64Hash;
     }
 
-    public static String getHashTypeImage(SignPdfFile pdfSig, String filePath, X509Certificate[] certChain, String pathImage) {
+    public static String getHashTypeImage(SignPdfFileIText7 pdfSig, String filePath, X509Certificate[] certChain, String pathImage) {
         int numberPageSign = DisplayConfig.NUMBER_PAGE_SIGN_DEFAULT;
         float widthRectangle = DisplayConfig.WIDTH_RECTANGLE_DEFAULT;
         float heightRectangle = DisplayConfig.HEIGHT_RECTANGLE_DEFAULT;
@@ -226,13 +225,13 @@ public class HashFilePDF {
         );
         System.out.println( displayConfig.getSignDate());
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         String base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
         return base64Hash;
     }
 
-    public static String getHashTypeImage_ExistedSignatureField(SignPdfFile pdfSig, String filePath, X509Certificate[] certChain, String pathImage, String fieldName) {
+    public static String getHashTypeImage_ExistedSignatureField(SignPdfFileIText7 pdfSig, String filePath, X509Certificate[] certChain, String pathImage, String fieldName) {
         String contact = CertUtils.getCN(certChain[0]);
         String reason = "Ký số";
         String location = "Hà Nội";
@@ -241,41 +240,41 @@ public class HashFilePDF {
                 pathImage, fieldName
         );
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         String base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
         return base64Hash;
     }
 
-    public static String getHashTypeTableDefault(SignPdfFile pdfSig, String filePath, X509Certificate[] certChain, String fontPath) {
-
-        String contact = CertUtils.getCN(certChain[0]);
-        String textArray[] = {"1", contact, "unit", "dateString", "opinion"};
-        DisplayConfig displayConfig = DisplayConfig.generateDisplayConfigTableDefault(2, textArray, fontPath);
-
-        int timeSign = 1;
-        String base64Hash;
-//        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
-        if (timeSign == 1) {
-            pdfSig.addPageEmpty(filePath, filePath + ".temp", displayConfig);
-            base64Hash = pdfSig.createHash(filePath + ".temp", certChain, digestAlg, cryptAlg, displayConfig);
-
-            File fileTemp = new File(filePath + ".temp");
-            if (fileTemp.exists()) {
-                fileTemp.delete();
-            }
-        } else {
-            base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
-        }
-        return base64Hash;
-    }
+//    public static String getHashTypeTableDefault(SignPdfFileIText7 pdfSig, String filePath, X509Certificate[] certChain, String fontPath) {
+//
+//        String contact = CertUtils.getCN(certChain[0]);
+//        String textArray[] = {"1", contact, "unit", "dateString", "opinion"};
+//        DisplayConfig displayConfig = DisplayConfig.generateDisplayConfigTableDefault(2, textArray, fontPath);
+//
+//        int timeSign = 1;
+//        String base64Hash;
+////        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
+//        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+//        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
+//        if (timeSign == 1) {
+//            pdfSig.addPageEmpty(filePath, filePath + ".temp", displayConfig);
+//            base64Hash = pdfSig.createHash(filePath + ".temp", certChain, digestAlg, cryptAlg, displayConfig);
+//
+//            File fileTemp = new File(filePath + ".temp");
+//            if (fileTemp.exists()) {
+//                fileTemp.delete();
+//            }
+//        } else {
+//            base64Hash = pdfSig.createHash(filePath, certChain, digestAlg, cryptAlg, displayConfig);
+//        }
+//        return base64Hash;
+//    }
 
     /**
      * Hien thi chu ky dang bang
      */
-    public static String getHashTypeTable(SignPdfFile pdfSig, String filePath, X509Certificate[] certChain, String fontPath) {
+    public static String getHashTypeTable(SignPdfFileIText7 pdfSig, String filePath, X509Certificate[] certChain, String fontPath) {
 
         String[] titles = new String[5];
 
@@ -307,10 +306,10 @@ public class HashFilePDF {
         int timeSign = 1;
         String base64Hash;
 //        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA1;
-        String digestAlg = SignPdfAsynchronous.HASH_ALGORITHM_SHA256;
-        String cryptAlg = SignPdfAsynchronous.CRYPT_ALGORITHM_RSA;
+        String digestAlg = SignPdfAsynchronous7.HASH_ALGORITHM_SHA256;
+        String cryptAlg = SignPdfAsynchronous7.CRYPT_ALGORITHM_RSA;
         if (timeSign == 1) {
-            pdfSig.addPageEmpty(filePath, filePath + ".temp", displayConfig);
+//            pdfSig.addPageEmpty(filePath, filePath + ".temp", displayConfig);
             base64Hash = pdfSig.createHash(filePath + ".temp", certChain, digestAlg, cryptAlg, displayConfig);
             File fileTemp = new File(filePath + ".temp");
             if (fileTemp.exists()) {
