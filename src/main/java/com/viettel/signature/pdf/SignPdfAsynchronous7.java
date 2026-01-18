@@ -25,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.Security;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -39,6 +41,7 @@ public class SignPdfAsynchronous7 {
 
     public static final String CRYPT_ALGORITHM_RSA = "RSA";
     public static final String HASH_ALGORITHM_SHA256 = "SHA256";
+
     private void prepareEmptySignature(
             PdfSigner signer,
             String fieldName,
@@ -646,6 +649,44 @@ public class SignPdfAsynchronous7 {
             return false;
         }
     }
+
+    private Certificate[] loadCertChainFromBase64(String certBase64) {
+        try {
+            CertificateFactory certFactory =
+                    CertificateFactory.getInstance("X.509");
+            // Decode Base64
+            byte[] certBytes = Base64.getDecoder().decode(certBase64);
+
+            // Có thể chứa 1 hoặc nhiều cert
+            Collection<? extends Certificate> certs =
+                    certFactory.generateCertificates(
+                            new ByteArrayInputStream(certBytes)
+                    );
+
+            if (certs == null || certs.isEmpty()) {
+                throw new RuntimeException("Certificate chain is empty");
+            }
+
+            List<Certificate> chain = new ArrayList<>();
+
+            for (Certificate cert : certs) {
+                if (!(cert instanceof X509Certificate)) {
+                    throw new RuntimeException(
+                            "Certificate must be instance of X509Certificate"
+                    );
+                }
+                chain.add(cert);
+            }
+
+            return chain.toArray(new Certificate[0]);
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Certificate must be instance of X509Certificate"
+            );
+        }
+    }
+
     public List<byte[]> createHash(String src, String fieldName, String digestAlgorithm,
                                    Certificate[] chain, DisplayConfig displayConfig) throws IOException {
         // 1️⃣ Tạo field trống (nếu chưa có)
