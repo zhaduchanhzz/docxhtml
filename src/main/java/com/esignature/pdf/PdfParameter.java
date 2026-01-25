@@ -2,7 +2,6 @@ package com.esignature.pdf;
 
 import com.esignature.signer.HashSignerException;
 import com.esignature.signer.SignatureParameter;
-import com.itextpdf.text.Rectangle;
 
 public class PdfParameter extends SignatureParameter {
 	private String reason;
@@ -11,7 +10,7 @@ public class PdfParameter extends SignatureParameter {
 	private String signPosition;
 	private int signPage;
 	private byte[] customImage;
-	private Rectangle signRectangle = new Rectangle(25, 25, 225, 75);
+//	private Rectangle signRectangle = new Rectangle(25, 25, 225, 75);
 	private int fontSize = 8;
 	private String tsaUrl;
 	private String tsaUser;
@@ -82,13 +81,7 @@ public class PdfParameter extends SignatureParameter {
 		if (split.length != 4) {
 			throw new HashSignerException("Signature posistion invalid");
 		}
-		try {
-			setSignRectangle(new Rectangle(Float.parseFloat(split[0]),
-					Float.parseFloat(split[1]), Float.parseFloat(split[2]),
-					Float.parseFloat(split[3])));
-		} catch (Exception e) {
-			throw new HashSignerException("Signature posistion invalid format");
-		}
+
 		this.signPosition = signPosition;
 	}
 
@@ -132,20 +125,6 @@ public class PdfParameter extends SignatureParameter {
 	 */
 	public void setRenderMode(RenderMode renderMode) {
 		this.renderMode = renderMode;
-	}
-
-	/**
-	 * @return the signRectangle
-	 */
-	public Rectangle getSignRectangle() {
-		return signRectangle;
-	}
-
-	/**
-	 * @param signRectangle the signRectangle to set
-	 */
-	public void setSignRectangle(Rectangle signRectangle) {
-		this.signRectangle = signRectangle;
 	}
 
 	/**
