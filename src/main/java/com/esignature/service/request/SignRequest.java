@@ -10,4 +10,5 @@ public class SignRequest {
     private String workerName;
     private String workerId;
     private String fileName;
+    private String verifyOption = "0";
 }
