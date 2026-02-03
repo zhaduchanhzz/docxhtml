@@ -119,9 +119,9 @@ public class IText7ExternalSigner {
 
                             byte[] authenticatedAttributes =
                                     StreamUtil.inputStreamToArray(data);
-
+                            System.out.println(data.readAllBytes().length + "input data");
                             // 🔥 SECOND HASH (thứ bạn cần)
-                            byte[] hasOnly = md.digest(authenticatedAttributes);
+                            byte[] hasOnly = DigestAlgorithms.digest(data,MessageDigest.getInstance(HASH_ALG));
                             PdfPKCS7 sgn = new PdfPKCS7(null, certChain, "SHA256", "BC",  new BouncyCastleDigest(), false);
                             sgn.setSignDate(signingTime);
                             secondHash = sgn.getAuthenticatedAttributeBytes(
@@ -130,6 +130,7 @@ public class IText7ExternalSigner {
                                     null,
                                     null
                             );
+                            System.out.println(secondHash.length);
 
                             // ❗ chưa ký, chỉ giữ chỗ
                             return new byte[0];
@@ -147,6 +148,7 @@ public class IText7ExternalSigner {
 
         // 👉 tạo placeholder + ByteRange
         signer.signExternalContainer(external, ESTIMATED_SIZE);
+        System.out.println(secondHash.length    + "after");
     }
 
     /**
