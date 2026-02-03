@@ -24,7 +24,7 @@ public class IText7ExternalSigner {
     private byte[] signedHash;     // chữ ký server trả về
 
     private static final String HASH_ALG = "SHA-256";
-    private static final int ESTIMATED_SIZE = 32000;
+    private static final int ESTIMATED_SIZE = 8192;
 
     private SignatureParameter param;               // giả sử bạn vẫn giữ class này
     private X509Certificate signerCert;
@@ -110,7 +110,7 @@ public class IText7ExternalSigner {
                 .setLayer2Text(signatureText);
         IExternalSignatureContainer external =
                 new IExternalSignatureContainer() {
-
+//                byte[] secondHash = new byte[ESTIMATED_SIZE];
                     @Override
                     public byte[] sign(InputStream data) {
                         try {
@@ -121,7 +121,15 @@ public class IText7ExternalSigner {
                                     StreamUtil.inputStreamToArray(data);
 
                             // 🔥 SECOND HASH (thứ bạn cần)
-                            secondHash = md.digest(authenticatedAttributes);
+                            byte[] hasOnly = md.digest(authenticatedAttributes);
+                            PdfPKCS7 sgn = new PdfPKCS7(null, certChain, "SHA256", "BC",  new BouncyCastleDigest(), false);
+                            sgn.setSignDate(signingTime);
+                            secondHash = sgn.getAuthenticatedAttributeBytes(
+                                    hasOnly,
+                                    PdfSigner.CryptoStandard.CMS,
+                                    null,
+                                    null
+                            );
 
                             // ❗ chưa ký, chỉ giữ chỗ
                             return new byte[0];

@@ -28,23 +28,28 @@ public class Main {
         // 1️⃣ Init signer
         IText7ExternalSigner signer =
                 new IText7ExternalSigner();
-
+        WorkerConnector workerConnector = new WorkerConnector(baseUrl);
+        CertResponse certResponse = workerConnector.getCert(workerName, workerId);
+        String certBase64 = certResponse.getData().getCert();
+        File file = new File("input.pdf");
+        byte[] bytes = FileUtils.readFileToByteArray(file);
+        SignatureParameter param = new SignatureParameter(bytes, certBase64);
+        signer.init(param);
         // 2️⃣ Phase 1: tạo placeholder + lấy second hash
         signer.prepareSignature(
                 inputPdf,
                 tmpPdf,
                 fieldName
         );
-        signer.calculateSignatureIText7( inputPdf,
-                tmpPdf,
-                fieldName);
+//        signer.calculateSignatureIText7( inputPdf,
+//                tmpPdf,
+//                fieldName);
         byte[] hashToSign = signer.getSecondHash();
         System.out.println(
                 "Second hash (Base64): " +
                         Base64.encodeBase64String(hashToSign)
         );
         String hashValue = Base64.encodeBase64String(signer.getSecondHash());
-        WorkerConnector workerConnector = new WorkerConnector(baseUrl);
         SignatureResponse signatureResponse = workerConnector.sign(hashValue, workerName, workerId);
         String signature = signatureResponse.getSignedData();
         byte[] signedHash = Base64.decodeBase64(signature);
@@ -62,7 +67,6 @@ public class Main {
     }
 
     private static void signPdf() throws Exception {
-        String sigText = "Ký bởi: Trần Quang Khánh \nNgày ký: 13/01/2026 \nTổ chức xác thực: SecureMetric";
         WorkerConnector workerConnector = new WorkerConnector(baseUrl);
         CertResponse certResponse = workerConnector.getCert(workerName, workerId);
         String certBase64 = certResponse.getData().getCert();
