@@ -45,23 +45,23 @@ public class Main {
 //                tmpPdf,
 //                fieldName);
         byte[] hashToSign = signer.getSecondHash();
-        System.out.println(
-                "Second hash (Base64): " +
-                        Base64.encodeBase64String(hashToSign)
-        );
+
         String hashValue = Base64.encodeBase64String(signer.getSecondHash());
-        SignatureResponse signatureResponse = workerConnector.sign(hashValue, workerName, workerId);
-        String signature = signatureResponse.getSignedData();
-        byte[] signedHash = Base64.decodeBase64(signature);
-
-
-        // 4️⃣ Phase 2: embed chữ ký vào PDF
-        signer.setSignedHash(signedHash);
-        signer.completeSignature(
-                tmpPdf,
-                signedPdf,
-                fieldName
+        System.out.println(
+                "Second hash (Base64): " +hashValue
         );
+        SignatureResponse signatureResponse = workerConnector.sign(hashValue, workerName, workerId);
+
+        String signature = signatureResponse.getSignedData();
+        if (!signer.checkHashSignature(signature)) {
+            System.out.println("Signature not match!");
+            return;
+        }
+        byte[] signedHash = Base64.decodeBase64(signature);
+        // 4️⃣ Phase 2: embed chữ ký vào PDF
+//        signer.setSignedHash(signedHash);
+        byte[] signedData = signer.sign(signedHash);
+        writeToFile(signedData, signedPdf);
 
         System.out.println("✅ Signed PDF created: " + signedPdf);
     }
@@ -86,11 +86,11 @@ public class Main {
             SignatureResponse signatureResponse = workerConnector.sign(hashValue, workerName, workerId);
             String signature = signatureResponse.getSignedData();
 //            byte[] signedData = pdfSigner.completeSigning(Base64.decodeBase64(signature));
-            pdfSigner.completeSignature(
-                    "tmp.pdf",
-                    "signed.pdf",
-                    "Signature1"
-            );
+//            pdfSigner.completeSignature(
+//                    "tmp.pdf",
+//                    "signed.pdf",
+//                    "Signature1"
+//            );
 
 //            writeToFile(signedData, "test_signed.pdf");
         } catch (Exception e) {
