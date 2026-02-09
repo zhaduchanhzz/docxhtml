@@ -201,7 +201,7 @@ public class IText7ExternalSigner {
 //                realSigner
 //        );
 //    }
-    public byte[] sign(byte[] signedBytes) {
+    public byte[] sign(byte[] signedBytes,String filedName) {
         try {
             BouncyCastleDigest digest = new BouncyCastleDigest();
             PdfPKCS7 sgn = new PdfPKCS7(null, certChain, "SHA256", "BC", digest, false);
@@ -215,7 +215,7 @@ public class IText7ExternalSigner {
             int estimateSize = _calculateEstimatedSignatureSize(certChain, tsaClient, null, null);
             System.out.println("Byte estimate size: " + estimateSize);
 //            signer.signDetached(external, estimateSize);
-            PdfSigner.signDeferred(new PdfDocument(pdfReader), "Signature1", bout, external);
+            PdfSigner.signDeferred(new PdfDocument(pdfReader), filedName, bout, external);
             return bout.toByteArray();
         } catch (Exception e) {
             e.printStackTrace();

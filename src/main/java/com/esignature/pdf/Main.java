@@ -23,7 +23,7 @@ public class Main {
         String inputPdf = "input.pdf";
         String tmpPdf = "tmp.pdf";
         String signedPdf = "signed.pdf";
-        String fieldName = "Signature1";
+        String fieldName = "Signature2";
 
         // 1️⃣ Init signer
         IText7ExternalSigner signer =
@@ -60,7 +60,7 @@ public class Main {
         byte[] signedHash = Base64.decodeBase64(signature);
         // 4️⃣ Phase 2: embed chữ ký vào PDF
 //        signer.setSignedHash(signedHash);
-        byte[] signedData = signer.sign(signedHash);
+        byte[] signedData = signer.sign(signedHash,fieldName);
         writeToFile(signedData, signedPdf);
 
         System.out.println("✅ Signed PDF created: " + signedPdf);
